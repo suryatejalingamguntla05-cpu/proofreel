@@ -34,7 +34,24 @@ GEMINI_API_KEY=your-gemini-api-key
 GEMINI_MODEL=gemini-2.0-flash
 ```
 
-Copy `.env.example` to `.env.local` only if you need optional integrations. Never commit secrets or `.env.local`. Some legacy API and integration routes still contain Supabase-backed behavior; the demo sign-in is not production authentication, and demo session data is not suitable for protecting real user data.
+Copy `.env.example` to `.env.local` only if you need optional integrations. Never commit secrets or `.env.local`.
+
+## Deploy to Vercel
+
+1. Import this GitHub repository in Vercel and keep the detected **Next.js** framework preset.
+2. Use the default install/build settings (`npm install` and `npm run build`); no custom output directory or `vercel.json` is needed.
+3. No environment variables are required for the demo. Vercel's deployment URL is used automatically for metadata and auth callback URLs; `NEXT_PUBLIC_APP_URL` can optionally override it with the canonical site URL.
+4. `GEMINI_API_KEY` is optional. Without it, the brief builder uses its local deterministic fallback.
+5. Deploy. The creator/brand demo workspaces and bundled marketplace data work without Supabase.
+
+Demo sessions and submissions are not production authentication or durable storage. Brief creation and Creative Fit Report API calls return a clear `503` response when no Supabase database is configured; public creator and brief discovery APIs return bundled sample data instead. Configure Supabase only if using the legacy database-backed account and write flows, and do not use demo sessions to protect real user data.
+
+## Demo workspaces
+
+- `/creator` — creator workspace with sample profile and project discovery.
+- `/brand` — brand/agency workspace with brief creation and creator discovery.
+- `/creators` and `/briefs` — public sample marketplaces.
+- `/briefs/new` — interactive brief builder; submissions are not saved in demo mode.
 
 ## Useful commands
 

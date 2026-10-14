@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { BRAND } from "@/lib/brand";
+import { appUrl } from "@/lib/env";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
   title: `${BRAND.name} — ${BRAND.oneLiner}`,
   description: BRAND.description,
   applicationName: BRAND.name,
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(appUrl()),
   openGraph: {
     title: `${BRAND.name} — ${BRAND.tagline}`,
     description: BRAND.oneLiner,

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
+import { isSupabaseConfigured } from "@/lib/env";
+import { listDemoBriefs } from "@/lib/demo/database";
 
 const briefBodySchema = z.object({
   title: z.string().trim().min(8, "Title must be at least 8 characters").max(120),
@@ -55,6 +57,13 @@ async function requireBrandProfile(supabase: Awaited<ReturnType<typeof createRou
 
 /** POST /api/briefs — create a brief (brand-only, server-validated). */
 export async function POST(req: NextRequest) {
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json(
+      { error: "Brief creation requires a configured database. The demo brief builder does not save submissions." },
+      { status: 503 }
+    );
+  }
+
   try {
     const cookieStore = cookies();
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
@@ -119,15 +128,30 @@ export async function POST(req: NextRequest) {
 /** GET /api/briefs — published briefs for discovery, or the caller's own briefs. */
 export async function GET(req: NextRequest) {
   try {
-    const cookieStore = cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
-
     const searchParams = new URL(req.url).searchParams;
     const mine = searchParams.get("mine") === "1";
-    const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
-    const limit = Math.min(24, Math.max(1, Number(searchParams.get("limit") ?? "12")));
+    const requestedPage = Number(searchParams.get("page") ?? "1");
+    const requestedLimit = Number(searchParams.get("limit") ?? "12");
+    const page = Number.isFinite(requestedPage) ? Math.max(1, Math.floor(requestedPage)) : 1;
+    const limit = Number.isFinite(requestedLimit) ? Math.min(24, Math.max(1, Math.floor(requestedLimit))) : 12;
     const from = (page - 1) * limit;
     const to = from + limit - 1;
+
+    if (!isSupabaseConfigured()) {
+      const rows = mine ? [] : listDemoBriefs({
+        q: searchParams.get("q") ?? undefined,
+        content_type: searchParams.get("content_type") ?? undefined,
+      });
+      const briefs = rows.slice(from, from + limit);
+      return NextResponse.json({
+        briefs,
+        pagination: { page, limit, total: rows.length, totalPages: Math.max(1, Math.ceil(rows.length / limit)) },
+        usingDemo: true,
+      });
+    }
+
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
     if (mine) {
       const guard = await requireBrandProfile(supabase);

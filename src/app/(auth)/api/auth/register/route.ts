@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { slugify } from "@/lib/utils";
+import { appUrl } from "@/lib/env";
 
 const registerBodySchema = z.object({
   email: z.string().email("Enter a valid email address").max(254),
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
       password,
       options: {
         data: { display_name: displayName, username, requested_role: role },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/callback`,
+        emailRedirectTo: `${appUrl()}/callback`,
       },
     });
 

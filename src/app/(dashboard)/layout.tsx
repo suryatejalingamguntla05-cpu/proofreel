@@ -4,9 +4,6 @@ import {
   LayoutDashboard,
   FileText,
   Users,
-  MessageCircle,
-  BarChart3,
-  Settings,
   LogOut,
   type LucideIcon,
 } from "lucide-react";
@@ -18,23 +15,16 @@ type NavItem = { href: string; label: string; icon: LucideIcon };
 function navFor(role: string): NavItem[] {
   if (role === "brand") {
     return [
+      { href: "/brand", label: "Workspace", icon: LayoutDashboard },
       { href: "/briefs", label: "Briefs", icon: FileText },
-      { href: "/creators", label: "Creators", icon: Users },
-      { href: "/messages", label: "Messages", icon: MessageCircle },
-      { href: "/notifications", label: "Notifications", icon: BarChart3 },
-      { href: "/settings", label: "Settings", icon: Settings },
+      { href: "/creators", label: "Find creators", icon: Users },
+      { href: "/briefs/new", label: "Create a brief", icon: FileText },
     ];
   }
   return [
-    { href: "/creator", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/creator/profile", label: "Profile", icon: Users },
-    { href: "/creator/portfolio", label: "Portfolio", icon: FileText },
-    { href: "/creator/analytics", label: "Analytics", icon: BarChart3 },
-    { href: "/creator/pricing", label: "Pricing", icon: Settings },
-    { href: "/creator/collaborations", label: "Collaborations", icon: Users },
-    { href: "/messages", label: "Messages", icon: MessageCircle },
-    { href: "/notifications", label: "Notifications", icon: BarChart3 },
-    { href: "/settings", label: "Settings", icon: Settings },
+    { href: "/creator", label: "Workspace", icon: LayoutDashboard },
+    { href: "/briefs", label: "Find briefs", icon: FileText },
+    { href: "/creators", label: "Explore creators", icon: Users },
   ];
 }
 

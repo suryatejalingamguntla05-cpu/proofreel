@@ -6,6 +6,8 @@ import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { computeFitScore, type CreatorScoringContext, FIT_REPORT_DISCLAIMER } from "@/lib/services/matching-service";
 import type { brief, creatorProfile, portfolioItem, creatorTool } from "@/types/database";
+import { isSupabaseConfigured } from "@/lib/env";
+import { DEMO_CREATORS } from "@/lib/demo/database";
 
 /**
  * GET /api/creators — public discovery (server-side filtering, pagination).
@@ -20,11 +22,51 @@ export async function GET(req: NextRequest) {
     const minBudgetRaw = searchParams.get("min_budget");
     const language = searchParams.get("language") ?? "";
     const availability = searchParams.get("availability")?.trim().toLowerCase() ?? "";
-    const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
-    const limit = Math.min(24, Math.max(1, Number(searchParams.get("limit") ?? "12")));
+    const requestedPage = Number(searchParams.get("page") ?? "1");
+    const requestedLimit = Number(searchParams.get("limit") ?? "12");
+    const page = Number.isFinite(requestedPage) ? Math.max(1, Math.floor(requestedPage)) : 1;
+    const limit = Number.isFinite(requestedLimit) ? Math.min(24, Math.max(1, Math.floor(requestedLimit))) : 12;
 
     const from = (page - 1) * limit;
     const to = from + limit - 1;
+
+    if (!isSupabaseConfigured()) {
+      const cleanBudget = (raw: string | null) => {
+        const value = Number(raw);
+        return Number.isFinite(value) && value > 0 ? Math.floor(value) : null;
+      };
+      const minBudget = cleanBudget(minBudgetRaw);
+      const maxBudget = cleanBudget(maxBudgetRaw);
+      const filtered = DEMO_CREATORS.filter((creator) => {
+        const searchable = `${creator.profiles.display_name} ${creator.profiles.username} ${creator.profiles.bio ?? ""}`.toLowerCase();
+        return (!q || searchable.includes(q.toLowerCase()))
+          && (!contentType || creator.art_form.includes(contentType))
+          && (!language || creator.profiles.languages.includes(language))
+          && (!availability || (creator.availability ?? "").toLowerCase().includes(availability))
+          && (minBudget === null || creator.hourly_rate_minor >= minBudget)
+          && (maxBudget === null || creator.hourly_rate_minor <= maxBudget);
+      });
+      const creators = filtered.slice(from, from + limit).map((creator) => ({
+        creator_profile_id: creator.id,
+        display_name: creator.profiles.display_name,
+        username: creator.profiles.username,
+        bio: creator.profiles.bio,
+        location: creator.profiles.location,
+        languages: creator.profiles.languages,
+        avatar_url: creator.profiles.avatar_url,
+        hourly_rate_minor: creator.hourly_rate_minor,
+        min_project_size_minor: creator.min_project_size_minor,
+        availability: creator.availability,
+        verification_status: creator.is_profile_verified ? "Reviewed" : "Pending review",
+      }));
+
+      return NextResponse.json({
+        creators,
+        pagination: { page, limit, total: filtered.length, totalPages: Math.max(1, Math.ceil(filtered.length / limit)) },
+        filtersApplied: { q, contentType, minBudget, maxBudget, language, availability },
+        usingDemo: true,
+      });
+    }
 
     let query = supabase
       .from("creator_profiles")
@@ -114,6 +156,13 @@ const fitBodySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json(
+      { error: "Creative Fit Reports require a configured database and authenticated brand account." },
+      { status: 503 }
+    );
+  }
+
   try {
     const body = await req.json().catch(() => ({}));
     const parsed = fitBodySchema.safeParse(body);

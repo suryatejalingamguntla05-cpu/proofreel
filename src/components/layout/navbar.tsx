@@ -3,10 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Bell, Briefcase, Compass, LayoutDashboard, LogOut, Menu, MessageCircle, Settings, ShieldCheck, X } from "lucide-react";
+import { Briefcase, Compass, LayoutDashboard, LogOut, Menu, ShieldCheck, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BRAND, PRIMARY_NAV } from "@/lib/brand";
 import { BrandLockup } from "@/components/layout/brand-mark";
+import { clearDemoSession } from "@/lib/demo/session";
 
 type NavUser = {
   display_name: string;
@@ -23,10 +24,7 @@ const PUBLIC_ICONS: Record<string, typeof Compass> = {
 };
 
 const PRIVATE_ITEMS = (role: string) => [
-  { href: role === "brand" ? "/brand" : "/creator", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/messages", label: "Messages", icon: MessageCircle },
-  { href: "/notifications", label: "Notifications", icon: Bell },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: role === "brand" ? "/brand" : "/creator", label: "Workspace", icon: LayoutDashboard },
 ];
 
 function Avatar({ user, size = 30 }: { user: NavUser; size?: number }) {
@@ -58,9 +56,7 @@ export function Navbar({ user, isAuthed }: { user: NavUser | null; isAuthed: boo
 
   async function logout() {
     setLoggingOut(true);
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("proofreel-demo-session");
-    }
+    clearDemoSession();
     router.replace("/login");
     router.refresh();
   }
@@ -99,7 +95,7 @@ export function Navbar({ user, isAuthed }: { user: NavUser | null; isAuthed: boo
           {isAuthed && user ? (
             <>
               <Link
-                href="/settings"
+                href={user.role === "brand" ? "/brand" : "/creator"}
                 className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 py-1 pl-1 pr-3 hover:bg-white/10"
               >
                 <Avatar user={user} />

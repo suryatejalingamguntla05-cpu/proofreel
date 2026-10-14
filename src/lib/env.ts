@@ -60,7 +60,18 @@ export function requirePublicEnv(
 
 /** Public app URL with a build-safe default. */
 export function appUrl(): string {
-  return read("NEXT_PUBLIC_APP_URL") ?? "http://localhost:3000";
+  const configured = read("NEXT_PUBLIC_APP_URL");
+  if (configured) return configured.replace(/\/+$/, "");
+
+  const productionUrl = read("VERCEL_PROJECT_PRODUCTION_URL");
+  const deploymentUrl = read("VERCEL_URL");
+  const vercelUrl =
+    read("VERCEL_ENV") === "production"
+      ? productionUrl ?? deploymentUrl
+      : deploymentUrl ?? productionUrl;
+  if (vercelUrl) return `https://${vercelUrl.replace(/^https?:\/\//, "")}`;
+
+  return "http://localhost:3000";
 }
 
 // ---------------------------------------------------------------------------

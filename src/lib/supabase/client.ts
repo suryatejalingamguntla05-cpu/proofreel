@@ -22,16 +22,15 @@ function unconfiguredProxy(): Db {
   };
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   const handler: ProxyHandler<any> = {
-    get() {
-      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-      const callable: any = (..._args: unknown[]) => new Proxy(callable, handler);
-      return callable;
+    get(_target, property) {
+      if (property === "then") return failOnce();
+      return new Proxy(failOnce, handler);
     },
     apply() {
       failOnce();
     },
   };
-  return new Proxy(function () {} as unknown as Db, handler);
+  return new Proxy(failOnce, handler) as unknown as Db;
 }
 
 export const supabase: Db = isSupabaseConfigured()
