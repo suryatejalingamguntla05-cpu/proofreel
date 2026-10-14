@@ -1,0 +1,16 @@
+# Supabase project configuration
+# Import this file into a new Supabase project.
+
+# Project
+schema = "public"
+override = []
+
+# Database
+db_connection_limit = true
+max_db_connections = 20
+
+# Custom identity
+enabled = false
+
+# Edge Runtime
+edge_runtime = false

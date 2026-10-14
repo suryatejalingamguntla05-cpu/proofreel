@@ -1,0 +1,62 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+
+# Environment variables (never commit secrets)
+.env*
+!.env.example
+.env*.local
+
+# Build outputs
+out/
+dist/
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS / editor
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+
+# Temp
+tmp/
+temp/
+*.un~
+.dump
+*.sqlite
+*.sqlite3
+
+# Test coverage
+coverage/
+.nyc_output
+
+# Playwright
+playwright-report/
+test-results/
+
+# DB
+supabase/seed.sql
+supabase/database.sql
+/.freebuff/
