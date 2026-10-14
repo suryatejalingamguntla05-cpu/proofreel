@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * Proofreel design tokens.
+ *
+ * The app is dark-first: `ink` surfaces carry the marketing and dashboard
+ * chrome, while cards sit on a slightly lifted surface. Light sections are
+ * opt-in with explicit background classes rather than a theme toggle, so a page
+ * can never render half-themed.
+ */
+:root {
+  --background: 12 14 22; /* ink-950 */
+  --foreground: 246 247 250; /* ink-50 */
+  --card: 25 28 40; /* ink-900 */
+  --card-foreground: 246 247 250;
+  --muted: 44 49 69; /* ink-800 */
+  --muted-foreground: 176 183 205; /* ink-300 */
+  --border: 44 49 69;
+  --input: 44 49 69;
+  --ring: 106 92 243; /* brand-500 */
+  --brand: 106 92 243;
+  --accent: 43 204 143; /* accent-400 */
+  --radius: 0.9rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  color: rgb(var(--foreground));
+  background: rgb(var(--background));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Skeleton shimmer for loading states */
+.skeleton {
+  background: linear-gradient(90deg, rgb(var(--muted)) 0%, rgb(var(--border)) 50%, rgb(var(--muted)) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Visible focus ring for keyboard users */
+:focus-visible {
+  outline: 2px solid rgb(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Skip link for keyboard users */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: rgb(var(--brand));
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  z-index: 100;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+.skip-link:focus {
+  top: 0;
+}
+
+/* ------------------------------------------------------------------ type */
+@layer components {
+  /* Eyebrow / kicker label used above section headings. */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-300 backdrop-blur;
+  }
+
+  .heading-xl {
+    @apply font-display text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl;
+  }
+
+  .heading-lg {
+    @apply font-display text-3xl font-bold tracking-tight text-white sm:text-4xl;
+  }
+
+  /* The two surface levels of the dark UI. */
+  .surface {
+    @apply rounded-3xl border border-white/10 bg-white/[0.035] backdrop-blur-sm;
+  }
+
+  .surface-raised {
+    @apply rounded-3xl border border-white/10 bg-ink-900/80 shadow-card backdrop-blur;
+  }
+
+  /* Buttons — iris for actions, mint is never used for actions. */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-500;
+  }
+
+  .btn-ghost {
+    @apply btn border border-white/15 text-ink-100 hover:bg-white/10;
+  }
+
+  /* Evidence chip. Mint = proof, never a call to action. */
+  .chip-proof {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-accent-400/30 bg-accent-400/10 px-2.5 py-1 text-xs font-medium text-accent-300;
+  }
+
+  /* Neutral metadata chip. */
+  .chip-meta {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium text-ink-300;
+  }
+}
