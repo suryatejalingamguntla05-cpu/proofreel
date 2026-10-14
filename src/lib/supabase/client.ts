@@ -12,7 +12,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { isSupabaseConfigured, requirePublicEnv } from "@/lib/env";
 
-type Db = SupabaseClient<any, "public", any>;
+type Db = SupabaseClient;
 
 function unconfiguredProxy(): Db {
   const failOnce = () => {

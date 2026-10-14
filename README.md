@@ -48,6 +48,8 @@ npm test           # Run unit tests
 npm run test:e2e   # Run Playwright end-to-end tests
 ```
 
+For the first end-to-end test run on a machine, install Playwright's Chromium browser with `npx playwright install chromium`.
+
 ## Tech stack
 
 - Next.js 14 with the App Router

@@ -20,12 +20,12 @@ import { BriefDraftSchema, buildTemplateBrief, type BriefDraft, type TemplateOpt
 export function getGeminiModel(): string {
   const configured = process.env.GEMINI_MODEL?.trim();
   // Only allow models that look like a Gemini generation to avoid surprises.
-  if (configured && /^gemini-[\w.\-]+$/i.test(configured)) return configured;
+  if (configured && /^gemini-[\w.-]+$/i.test(configured)) return configured;
   return "gemini-2.0-flash";
 }
 
 export function isAiConfigured(): boolean {
-  return optionalIntegrations.gemini && /^AIza[\w\-]{20,}$/.test(process.env.GEMINI_API_KEY ?? "");
+  return optionalIntegrations.gemini && /^AIza[\w-]{20,}$/.test(process.env.GEMINI_API_KEY ?? "");
 }
 
 const GeminiResponseSchema = z.object({

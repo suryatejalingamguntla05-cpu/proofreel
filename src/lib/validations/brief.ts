@@ -8,7 +8,7 @@ export const briefSchema = z.object({
     .trim()
     .min(8, "Brief title must be at least 8 characters")
     .max(120, "Brief title must be 120 characters or fewer")
-    .regex(/^[a-zA-Z0-9\s\-\_\:\.\,]+$/, "Brief title contains invalid characters"),
+    .regex(/^[a-zA-Z0-9\s_:.,-]+$/, "Brief title contains invalid characters"),
   // Objective — required, reasoned
   objective: z
     .string()

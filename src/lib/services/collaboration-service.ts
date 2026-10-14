@@ -350,7 +350,7 @@ export async function listRevisions(deliverableId: string): Promise<revision[]> 
 // Conversations & messages
 // ---------------------------------------------------------------------------
 export async function findOrCreateConversation(participantA: string, participantB: string): Promise<conversation> {
-  let { data, error } = await supabase
+  const { data, error } = await supabase
     .from("conversations")
     .select("id")
     .or(`participant_a_id.eq.${participantA},participant_b_id.eq.${participantA}`)
