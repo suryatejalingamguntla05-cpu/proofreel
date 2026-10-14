@@ -1,23 +1,19 @@
 /**
  * src/lib/supabase/client.ts
  * ---------------------------------------------------------------------------
- * Server/browser-safe Supabase client using the PUBLISHABLE (anon) key.
- *
- * When Supabase env vars are not configured (fresh checkout), exports a
- * fail-loud proxy instead of crashing at import time, so the app still
- * builds and boots; any real DB usage throws a clear actionable error.
- * Operations never fake success.
+ * Client-side Supabase client using the public (anon/publishable) key.
+ * This version supports fallback environment variable names so deployments
+ * that provide SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY still work.
  */
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { isSupabaseConfigured, requirePublicEnv } from "@/lib/env";
 
 type Db = SupabaseClient;
 
 function unconfiguredProxy(): Db {
   const failOnce = () => {
     throw new Error(
-      "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local (see .env.example) and restart the server. This operation was not performed."
+      "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (or SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY) in your environment (see .env.example) and restart the server. This operation was not performed."
     );
   };
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -33,8 +29,19 @@ function unconfiguredProxy(): Db {
   return new Proxy(failOnce, handler) as unknown as Db;
 }
 
-export const supabase: Db = isSupabaseConfigured()
-  ? createClient(requirePublicEnv("NEXT_PUBLIC_SUPABASE_URL"), requirePublicEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"), {
+function publicUrl(): string | undefined {
+  return process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? undefined;
+}
+
+function publicKey(): string | undefined {
+  return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.SUPABASE_PUBLISHABLE_KEY ?? undefined;
+}
+
+const url = publicUrl();
+const key = publicKey();
+
+export const supabase: Db = url && key
+  ? createClient(url, key, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     })
   : unconfiguredProxy();

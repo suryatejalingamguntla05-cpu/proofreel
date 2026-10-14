@@ -1,43 +1,38 @@
 /**
  * src/lib/supabase/admin.ts
  * ---------------------------------------------------------------------------
- * SERVICE-ROLE Supabase client (server only — never import into browser
- * bundles). Used for privileged operations: creating profiles after signup,
- * admin moderation, seeding, verification review.
- *
- * If SUPABASE_SERVICE_ROLE_KEY is not configured, operations fail loudly with
- * an actionable message instead of crashing at import time.
+ * Server-side Supabase admin client. Only constructed when server-side envs are
+ * available. Exports a fail-loud proxy when not configured so builds remain safe.
  */
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { isSupabaseAdminConfigured, requirePublicEnv, requireServerEnv } from "@/lib/env";
 
-type Db = SupabaseClient;
+type AdminDb = SupabaseClient;
 
-function unconfiguredProxy(): Db {
+function unconfiguredProxy(): AdminDb {
   const failOnce = () => {
     throw new Error(
-      "Supabase service-role access is not configured. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local (see .env.example), restart the server, and retry. This privileged operation was NOT executed."
+      "Supabase admin is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_SECRET_KEY) in your environment. This operation was not performed."
     );
   };
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   const handler: ProxyHandler<any> = {
-    get() {
-      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-      const callable: any = (..._args: unknown[]) => new Proxy(callable, handler);
-      return callable;
+    get(_target, property) {
+      if (property === "then") return failOnce();
+      return new Proxy(failOnce, handler);
     },
     apply() {
       failOnce();
     },
   };
-  return new Proxy(function () {} as unknown as Db, handler);
+  return new Proxy(failOnce, handler) as unknown as AdminDb;
 }
 
-export const supabaseAdmin: Db = isSupabaseAdminConfigured()
-  ? createClient(requirePublicEnv("NEXT_PUBLIC_SUPABASE_URL"), requireServerEnv("SUPABASE_SERVICE_ROLE_KEY"), {
-      auth: { persistSession: false, autoRefreshToken: false },
-    })
+const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY;
+
+export const supabaseAdmin: AdminDb = url && serviceKey
+  ? createClient(url, serviceKey, { auth: { persistSession: false } })
   : unconfiguredProxy();
 
 export default supabaseAdmin;
